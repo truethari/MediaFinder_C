@@ -5,7 +5,20 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
+#include <assert.h>
+
+#ifdef _WIN64
 #include <windows.h>
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#ifdef linux
+
+#endif
 
 FILE *fptr;
 char *allDrives[255] = {};
@@ -33,12 +46,6 @@ bool isMedia(char* str) {
 }
 
 void writeText(char* basePath, char *filePath) {
-    if(fptr == NULL)
-    {
-        printf("Error!");   
-        exit(1);             
-    }
-
     fprintf(fptr, "%s/%s\n", basePath, filePath);
 }
 
@@ -108,6 +115,17 @@ void drive() {
 
 int main() {
     fptr = fopen("log.txt", "a+");
+    if(fptr == NULL)
+    {
+        printf("Error!");   
+        exit(1);             
+    }
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[64];
+    assert(strftime(s, sizeof(s), "%c", tm));
+    fprintf(fptr, "\n\n---%s---\n", s);
+
     drive();
 
     listFilesRecursively("C:/GitHub/MediaFinder_C");
