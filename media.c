@@ -4,56 +4,11 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
+FILE *fptr;
 char *fileTypes[] = {".mp4", ".mkv", ".avi", ".3gp", ".flv", ".jpg", "jpeg", ".png", ".psd"};
 int sizeOfFileTypes = sizeof fileTypes / sizeof fileTypes[0];
-
-void welcome() {
-    int number;
-    while (1) {
-        printf("1. Run\n2. Exit\n\n");
-        printf("> ");
-        if (scanf("%d", &number) == 0) {
-            fflush(stdin);
-            printf("Wrong input!\n");
-            continue;
-        }
-
-        if ((number <= 0) || (number > 2)) printf("Wrong input!\n");
-        else break;
-    }
-    if (number == 1) {
-        printf("Run..");
-    }
-}
-
-void listFilesRecursively(char *basePath)
-{
-    char path[1000];
-    struct dirent *dp;
-    DIR *dir = opendir(basePath);
-
-    // Unable to open directory stream
-    if (!dir)
-        return;
-
-    int fileCount = 0;
-    while ((dp = readdir(dir)) != NULL)
-    {
-        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-        {
-            printf("%s/%s\n", basePath, dp->d_name);
-
-            strcpy(path, basePath);
-            strcat(path, "/");
-            strcat(path, dp->d_name);
-
-            listFilesRecursively(path);
-        }
-    }
-
-    closedir(dir);
-}
 
 bool endsWith(char* base, char* str) {
     int blen = strlen(base);
@@ -75,8 +30,70 @@ bool isMedia(char* str) {
     return (result == 0);
 }
 
+void writeText(char* basePath, char *filePath) {
+    if(fptr == NULL)
+    {
+        printf("Error!");   
+        exit(1);             
+    }
+
+    fprintf(fptr, "%s/%s\n", basePath, filePath);
+}
+
+void listFilesRecursively(char *basePath)
+{
+    char path[1000];
+    struct dirent *dp;
+    DIR *dir = opendir(basePath);
+
+    // Unable to open directory stream
+    if (!dir)
+        return;
+
+    while ((dp = readdir(dir)) != NULL)
+    {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+        {
+            if (isMedia(dp->d_name)) {
+                writeText(basePath, dp->d_name);
+                // printf("%s/%s\n", basePath, dp->d_name);
+            }
+
+            strcpy(path, basePath);
+            strcat(path, "/");
+            strcat(path, dp->d_name);
+
+            listFilesRecursively(path);
+        }
+    }
+
+    closedir(dir);
+}
+
+void welcome() {
+    int number;
+    while (1) {
+        printf("1. Run\n2. Exit\n\n");
+        printf("> ");
+        if (scanf("%d", &number) == 0) {
+            fflush(stdin);
+            printf("Wrong input!\n");
+            continue;
+        }
+
+        if ((number <= 0) || (number > 2)) printf("Wrong input!\n");
+        else break;
+    }
+    if (number == 1) {
+        printf("Run..");
+    }
+}
+
 int main() {
-   //listFilesRecursively("C:/GitHub/MediaFinder_C");
-   //printf("%s", isMedia("tt.jpg")? "true": "false");
-   return 0;
+    fptr = fopen("log.txt", "a+");
+
+    // listFilesRecursively("C:/GitHub/MediaFinder_C");
+
+    fclose(fptr);
+    return 0;
 }
