@@ -5,8 +5,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <windows.h>
 
 FILE *fptr;
+char *allDrives[255] = {};
 char *fileTypes[] = {".mp4", ".mkv", ".avi", ".3gp", ".flv", ".jpg", "jpeg", ".png", ".psd"};
 int sizeOfFileTypes = sizeof fileTypes / sizeof fileTypes[0];
 
@@ -89,11 +91,26 @@ void welcome() {
     }
 }
 
+void drive() {
+    char buf[255];
+    int sz = GetLogicalDriveStrings(sizeof(buf), buf);
+    if( sz > 0) {
+        char* p1 = buf;
+        char* p2;
+        int count = 0;
+        while(*p1 != '\0' && (p2 = strchr(p1,'\0')) != NULL) {
+            allDrives[count] = p1;
+            count++;
+            p1 = p2+1;
+        }
+    }
+}
+
 int main() {
     fptr = fopen("log.txt", "a+");
+    drive();
 
-    // listFilesRecursively("C:/GitHub/MediaFinder_C");
-
+    listFilesRecursively("C:/GitHub/MediaFinder_C");
     fclose(fptr);
     return 0;
 }
