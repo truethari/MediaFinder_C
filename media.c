@@ -24,6 +24,53 @@ FILE *fptr;
 char *allDrives[255] = {};
 char *fileTypes[] = {".mp4", ".mkv", ".avi", ".3gp", ".flv", ".jpg", "jpeg", ".png", ".psd"};
 int sizeOfFileTypes = sizeof fileTypes / sizeof fileTypes[0];
+int fileCount = 0;
+
+char *replace(const char *s, char ch, const char *repl) {
+    int count = 0;
+    const char *t;
+    for(t=s; *t; t++)
+        count += (*t == ch);
+
+    size_t rlen = strlen(repl);
+    char *res = malloc(strlen(s) + (rlen-1)*count + 1);
+    char *ptr = res;
+    for(t=s; *t; t++) {
+        if(*t == ch) {
+            memcpy(ptr, repl, rlen);
+            ptr += rlen;
+        } else {
+            *ptr++ = *t;
+        }
+    }
+    *ptr = 0;
+    return res;
+}
+
+void createNewFile(char *filename) {
+
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[64];
+    assert(strftime(s, sizeof(s), "%c", tm));
+    // fprintf(fptr, "\n\n---%s---\n", s);
+    printf("%s", tm);
+
+    char *filetype = ".dll";
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%s%s", filename, filetype);
+
+    fptr = fopen(buf, "a+");
+    if(fptr == NULL)
+    {
+        printf("Error!");   
+        exit(1);             
+    }
+}
+
+void closeFile() {
+    fclose(fptr);
+}
 
 bool endsWith(char* base, char* str) {
     int blen = strlen(base);
@@ -65,6 +112,11 @@ void listFilesRecursively(char *basePath)
         {
             if (isMedia(dp->d_name)) {
                 writeText(basePath, dp->d_name);
+                fileCount++;
+                if (fileCount == 1000) {
+                    closeFile();
+                    //createNewFile();
+                }
                 // printf("%s/%s\n", basePath, dp->d_name);
             }
 
@@ -114,21 +166,13 @@ void drive() {
 }
 
 int main() {
-    fptr = fopen("log.txt", "a+");
-    if(fptr == NULL)
-    {
-        printf("Error!");   
-        exit(1);             
-    }
-    time_t t = time(NULL);
-    struct tm *tm = localtime(&t);
-    char s[64];
-    assert(strftime(s, sizeof(s), "%c", tm));
-    fprintf(fptr, "\n\n---%s---\n", s);
+    // createNewFile("1");
 
-    drive();
+    
 
-    listFilesRecursively("C:/GitHub/MediaFinder_C");
-    fclose(fptr);
+    // //drive();
+
+    // listFilesRecursively("C:/GitHub/MediaFinder_C");
+    // closeFile();
     return 0;
 }
