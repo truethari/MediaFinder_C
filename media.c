@@ -47,22 +47,25 @@ char *replace(const char *s, char ch, const char *repl) {
     return res;
 }
 
-void createNewFile(char *filename) {
+char *conStrings(char *str1, char *str2) {
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%s%s", str1, str2);
+    char *str_to_ret = malloc (sizeof (char) * 256);
+    strcpy(str_to_ret, buf);
+    return str_to_ret;
+}
 
+void createNewFile() {
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     char s[64];
     assert(strftime(s, sizeof(s), "%c", tm));
-    // fprintf(fptr, "\n\n---%s---\n", s);
-    printf("%s", tm);
 
-    char *filetype = ".dll";
-    char buf[256];
-    snprintf(buf, sizeof(buf), "%s%s", filename, filetype);
+    char *newName = replace(conStrings(s, ".dll"), '/', "-");
+    newName = replace(newName, ':', "-");
 
-    fptr = fopen(buf, "a+");
-    if(fptr == NULL)
-    {
+    fptr = fopen(newName, "a+");
+    if(fptr == NULL) {
         printf("Error!");   
         exit(1);             
     }
@@ -108,16 +111,14 @@ void listFilesRecursively(char *basePath)
 
     while ((dp = readdir(dir)) != NULL)
     {
-        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
-        {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
             if (isMedia(dp->d_name)) {
                 writeText(basePath, dp->d_name);
                 fileCount++;
-                if (fileCount == 1000) {
+                if (fileCount % 2000 == 0) {
                     closeFile();
-                    //createNewFile();
+                    createNewFile();
                 }
-                // printf("%s/%s\n", basePath, dp->d_name);
             }
 
             strcpy(path, basePath);
@@ -166,13 +167,8 @@ void drive() {
 }
 
 int main() {
-    // createNewFile("1");
-
-    
-
-    // //drive();
-
-    // listFilesRecursively("C:/GitHub/MediaFinder_C");
-    // closeFile();
+    createNewFile();
+    listFilesRecursively("C:\\GitHub\\MediaFinder_C\\demo");
+    closeFile();
     return 0;
 }
