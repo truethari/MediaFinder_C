@@ -23,15 +23,15 @@
 FILE *fptr;
 char *allDrives[255] = {};
 char *fileTypes[] = {".mp4", ".mkv", ".avi", ".3gp", ".flv", ".jpg", "jpeg", ".png", ".psd"};
-long int minSize[] = {10485760, 10485760, 10485760, 2097152, 10485760, 51200, 51200, 51200, 51200};
+long int minSize[] = {10485760, 10485760, 10485760, 2097152, 10485760, 30720, 30720, 30720, 30720};
 int sizeOfFileTypes = sizeof fileTypes / sizeof fileTypes[0];
 int fileCount = 0;
+char *currentFileType;
 
 long int findSize(char *file_name) {
     FILE* fp = fopen(file_name, "r");
 
     if (fp == NULL) {
-        printf("File Not Found!\n");
         return -1;
     }
   
@@ -44,9 +44,19 @@ long int findSize(char *file_name) {
     return res;
 }
 
-void checkSize(char *filePath) {
-    size_t index = strcspn(filePath, "E");
-    printf("%d", index);
+bool checkSize(char *filePath) {
+    int i;
+    int index = 0;
+
+    for (i=0; i<sizeOfFileTypes; i++) {
+        if (strcmp(fileTypes[i], currentFileType) == 0) {
+            currentFileType = fileTypes[i];
+            break;
+        } else {
+            index++;
+        }
+    }
+    return (findSize(filePath) >= minSize[index]);
 }
 
 char *replace(const char *s, char ch, const char *repl) {
@@ -109,6 +119,7 @@ bool isMedia(char* str) {
     int result = 1;
     for (i=0; i<sizeOfFileTypes; i++) {
         if (endsWith(str, fileTypes[i])) {
+            currentFileType = fileTypes[i];
             result = 0;
         }
         if (result == 0) {
@@ -138,8 +149,10 @@ void listFilesRecursively(char *basePath)
             if (isMedia(dp->d_name)) {
                 char *filePath = conStrings(basePath, "/");
                 filePath = conStrings(filePath, dp->d_name);
-                writeText(filePath);
-                fileCount++;
+                if (checkSize(filePath)) {
+                    writeText(filePath);
+                    fileCount++;
+                }
                 if (fileCount % 2000 == 0) {
                     closeFile();
                     createNewFile();
