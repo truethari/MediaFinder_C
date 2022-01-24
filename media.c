@@ -23,8 +23,31 @@
 FILE *fptr;
 char *allDrives[255] = {};
 char *fileTypes[] = {".mp4", ".mkv", ".avi", ".3gp", ".flv", ".jpg", "jpeg", ".png", ".psd"};
+long int minSize[] = {10485760, 10485760, 10485760, 2097152, 10485760, 51200, 51200, 51200, 51200};
 int sizeOfFileTypes = sizeof fileTypes / sizeof fileTypes[0];
 int fileCount = 0;
+
+long int findSize(char *file_name) {
+    FILE* fp = fopen(file_name, "r");
+
+    if (fp == NULL) {
+        printf("File Not Found!\n");
+        return -1;
+    }
+  
+    fseek(fp, 0L, SEEK_END);
+
+    long int res = ftell(fp);
+
+    fclose(fp);
+
+    return res;
+}
+
+void checkSize(char *filePath) {
+    size_t index = strcspn(filePath, "E");
+    printf("%d", index);
+}
 
 char *replace(const char *s, char ch, const char *repl) {
     int count = 0;
@@ -95,8 +118,8 @@ bool isMedia(char* str) {
     return (result == 0);
 }
 
-void writeText(char* basePath, char *filePath) {
-    fprintf(fptr, "%s/%s\n", basePath, filePath);
+void writeText(char *filePath) {
+    fprintf(fptr, "%s\n", filePath);
 }
 
 void listFilesRecursively(char *basePath)
@@ -113,7 +136,9 @@ void listFilesRecursively(char *basePath)
     {
         if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
             if (isMedia(dp->d_name)) {
-                writeText(basePath, dp->d_name);
+                char *filePath = conStrings(basePath, "/");
+                filePath = conStrings(filePath, dp->d_name);
+                writeText(filePath);
                 fileCount++;
                 if (fileCount % 2000 == 0) {
                     closeFile();
@@ -167,8 +192,8 @@ void drive() {
 }
 
 int main() {
-    createNewFile();
-    listFilesRecursively("C:\\GitHub\\MediaFinder_C\\demo");
-    closeFile();
+    // createNewFile();
+    // listFilesRecursively("C:\\GitHub\\MediaFinder_C\\demo");
+    // closeFile();
     return 0;
 }
