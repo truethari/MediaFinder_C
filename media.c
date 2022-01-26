@@ -30,15 +30,11 @@ char *currentFileType;
 
 long int findSize(char *file_name) {
     FILE* fp = fopen(file_name, "r");
-
     if (fp == NULL) {
         return -1;
     }
-  
     fseek(fp, 0L, SEEK_END);
-
     long int res = ftell(fp);
-
     fclose(fp);
 
     return res;
@@ -47,7 +43,6 @@ long int findSize(char *file_name) {
 bool checkSize(char *filePath) {
     int i;
     int index = 0;
-
     for (i=0; i<sizeOfFileTypes; i++) {
         if (strcmp(fileTypes[i], currentFileType) == 0) {
             currentFileType = fileTypes[i];
@@ -59,17 +54,17 @@ bool checkSize(char *filePath) {
     return (findSize(filePath) >= minSize[index]);
 }
 
-char *replace(const char *s, char ch, const char *repl) {
+char *replace(const char *string, char find, const char *repl) {
     int count = 0;
     const char *t;
-    for(t=s; *t; t++)
-        count += (*t == ch);
-
+    for(t=string; *t; t++) {
+        count += (*t == find);
+    }
     size_t rlen = strlen(repl);
-    char *res = malloc(strlen(s) + (rlen-1)*count + 1);
+    char *res = malloc(strlen(string) + (rlen-1)*count + 1);
     char *ptr = res;
-    for(t=s; *t; t++) {
-        if(*t == ch) {
+    for(t=string; *t; t++) {
+        if(*t == find) {
             memcpy(ptr, repl, rlen);
             ptr += rlen;
         } else {
@@ -83,7 +78,7 @@ char *replace(const char *s, char ch, const char *repl) {
 char *conStrings(char *str1, char *str2) {
     char buf[256];
     snprintf(buf, sizeof(buf), "%s%s", str1, str2);
-    char *str_to_ret = malloc (sizeof (char) * 256);
+    char *str_to_ret = malloc(sizeof (char) * 256);
     strcpy(str_to_ret, buf);
     return str_to_ret;
 }
